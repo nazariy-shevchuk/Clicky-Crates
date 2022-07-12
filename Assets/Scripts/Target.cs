@@ -7,11 +7,11 @@ public class Target : MonoBehaviour
     private Rigidbody targerRb;
     private GameManager gameManager;
 
-    private float minSpeed = 12;
-    private float maxSpeed = 16;
-    private float maxTorque = 10;
-    private float xRange = 4;
-    private float ySpawnPos = -2;
+    [SerializeField] private static float minSpeed = 12;
+    [SerializeField] private static float maxSpeed = 16;
+    [SerializeField] private static float maxTorque = 10;
+    [SerializeField] private static float xRange = 4;
+    [SerializeField] private const float ySpawnPos = -2;
 
     public int pointValue;
     public ParticleSystem explosionParticle;
@@ -27,13 +27,7 @@ public class Target : MonoBehaviour
         transform.position = RandomSpawnPos();    // Set default position
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    // Destroy object and add score
+    // When target is clicked, destroy it, update score, and generate explosion
     private void OnMouseDown()
     {
         if (gameManager.isGameActive)
@@ -42,29 +36,36 @@ public class Target : MonoBehaviour
             Instantiate(explosionParticle, transform.position, explosionParticle.transform.rotation);
             gameManager.UpdateScore(pointValue);
         }
+        if (gameObject.CompareTag("Player"))
+        {
+            gameManager.UpdateLives(1);
+        }
     }
 
-    // Destroy objects out of the scene and end the game
+    // If target that is NOT the bad object collides with sensor, trigger game over
     private void OnTriggerEnter(Collider other)
     {
         Destroy(gameObject);
 
-        if (!gameObject.CompareTag("Bad"))
+        if (!gameObject.CompareTag("Bad") && gameManager.isGameActive)
         {
-            gameManager.GameOver();
+            gameManager.UpdateLives(-1);
         }
     }
 
+    // Generate a random force value
     Vector3 RandomForce()
     {
         return Vector3.up * Random.Range(minSpeed, maxSpeed);
     }
 
+    // Generate a random torque value
     float RandomTorque()
     {
         return Random.Range(-maxTorque, maxTorque);
     }
 
+    // Generate a random spawn position
     Vector3 RandomSpawnPos()
     {
         return new Vector3(Random.Range(-xRange, xRange), ySpawnPos);

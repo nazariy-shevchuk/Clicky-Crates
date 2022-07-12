@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     public List<GameObject> targets;
+    public GameObject[] lifeIndicators;
     public GameObject titleScreen;
 
     public bool isGameActive;
@@ -16,22 +17,30 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI gameOverText;
 
-    private int score;
-    private float spawnRate = 1.0f;
+    [SerializeField] private int score;
+    [SerializeField] private int lives;
+    [SerializeField] private int maxLives;
+    [SerializeField] private float spawnRate = 1.0f;
 
-    // Start is called before the first frame update
-    void Start()
+    // Start the game, remove title screen, reset score, and adjust spawnRate based on difficulty button clicked
+    public void StartGame(int difficulty)
     {
-        
+        spawnRate /= difficulty;
+        isGameActive = true;
+        score = 0;
+        maxLives = lifeIndicators.Length;
+        lives = 0;
+
+        StartCoroutine(SpawnTarget());
+        UpdateScore(score);
+        UpdateLives(maxLives);
+
+        scoreText.gameObject.SetActive(true);
+        titleScreen.gameObject.SetActive(false);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
-    // Coroutine to spawn random target
+    // While game is active spawn a random target
     IEnumerator SpawnTarget()
     {
         while (isGameActive)
@@ -43,12 +52,38 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // Update score with value from target clicked
     public void UpdateScore(int scoreToAdd)
     {
         score += scoreToAdd;
         scoreText.text = "Score: " + score;
     }
 
+    // Update lives
+    public void UpdateLives(int livesToChange)
+    {
+        lives += livesToChange;
+        Debug.Log("Lives: " + lives);
+
+        if (livesToChange > 0)
+        {
+            for (int i = 0; i < lives; i++)
+            {
+                lifeIndicators[i].gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            lifeIndicators[lives].gameObject.SetActive(false);
+        }
+
+        if (lives <= 0)
+        {
+            GameOver();
+        }
+    }
+
+    // Stop game, bring up game over text and restart button
     public void GameOver()
     {
         isGameActive = false;
@@ -57,20 +92,9 @@ public class GameManager : MonoBehaviour
         restartButton.gameObject.SetActive(true);
     }
 
+    // Restart game by reloading the scene
     public void RestartGame()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
-
-    public void StartGame(int difficulty)
-    {
-        isGameActive = true;
-        score = 0;
-        spawnRate /= difficulty;
-
-        StartCoroutine(SpawnTarget());
-        UpdateScore(score);
-
-        titleScreen.gameObject.SetActive(false);
     }
 }

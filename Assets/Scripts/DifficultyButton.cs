@@ -19,12 +19,9 @@ public class DifficultyButton : MonoBehaviour
         gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
+    /* When button is clicked, call the StartGame() method
+     * and pass it the difficulty value from the button
+     */
     void SetDifficulty()
     {
         Debug.Log(button.gameObject.name + " was clicked");
